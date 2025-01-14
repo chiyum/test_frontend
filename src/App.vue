@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import axios from 'axios'
-import {onMounted, ref} from 'vue';
+import { onMounted, ref } from 'vue';
 import BFormControls from "./components/BFormControls.vue";
 
 interface User {
@@ -66,7 +66,7 @@ interface User {
   age: number;
 }
 
-const baseUrl = '' // 由面試官提供
+const baseUrl = 'https://tpvtkoia.wuc.us.kg' // 由面試官提供
 const users = ref<User[]>([])
 const formDate = ref({
   // id readonly
@@ -80,6 +80,7 @@ const create = () => {
 }
 
 const edit = () => {
+  console.log(formDate.value.name, formDate.value.age)
   // 需有確認步驟
 }
 
