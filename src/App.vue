@@ -57,7 +57,7 @@
 
 <script setup lang="ts">
 import axios from 'axios'
-import { onMounted, ref } from 'vue';
+import {computed, onMounted, ref} from 'vue';
 import BFormControls from "./components/BFormControls.vue";
 
 interface User {
@@ -75,21 +75,90 @@ const formDate = ref({
   age: 0,
 })
 
+// 輸入是否無效
+const inputIsInvalid = computed(() => {
+  return formDate.value.name === '' || !formDate.value.age || formDate.value.age < 0
+})
+
 const create = () => {
   // 需有確認步驟
+  if(inputIsInvalid.value){
+    window.alert('請輸入姓名及年齡')
+    return
+  }
+  const isConfirmed = window.confirm('確定要新增這筆資料嗎？')
+  if (isConfirmed) {
+    axios({
+      method: 'post',
+      url: baseUrl + '/api/user',
+      data: {
+        age: formDate.value.age,
+        name: formDate.value.name
+      }
+    }).then(() => {
+      // API文件沒有說明成功時會回傳什麼，所以這邊就直接重新取得資料
+      // if(res.data.code === 200){
+      //   getUsers();
+      // }
+      getUsers()
+    }).catch(err => {
+      alert('新增失敗')
+      console.log(err)
+    })
+  }
 }
 
 const edit = () => {
   console.log(formDate.value.name, formDate.value.age)
+  if(inputIsInvalid.value){
+    window.alert('請輸入姓名及年齡')
+    return
+  }
+  const isConfirmed = window.confirm(`確定修改${formDate.value.name}(${formDate.value.age})嗎？`)
+  if (isConfirmed) {
+    axios({
+      method: 'put',
+      url: baseUrl + '/api/user',
+      data: {
+        id: formDate.value.id,
+        age: formDate.value.age,
+        name: formDate.value.name
+      }
+    }).then(() => {
+      getUsers()
+    }).catch(err => {
+      alert('修改失敗')
+      console.log(err)
+    })
+  }
   // 需有確認步驟
 }
 
 
 const selectUser = (user: User) => {
   // 禁止使用 formDate.value = user
+  // @DESC: 上面禁止的原因是會導致 formDate 與 user 共用記憶體位置，修改 formDate 會同時修改 user
+  // 所以這邊使用展開運算值來避免這個問題
+  formDate.value = { ...user }
 }
 
 const remove = (user: User) => {
+  const { id, name } = user;
+  const isConfirmed = window.confirm(`確定刪除${name}嗎？`)
+  if(isConfirmed){
+    axios({
+      method: 'delete',
+      url: baseUrl + '/api/user',
+      data: {
+        id
+      }
+    }).then(() => {
+      getUsers()
+    }).catch(err => {
+      alert('刪除失敗')
+      console.log(err)
+    })
+  }
   // 需有確認步驟
 }
 
